@@ -1,6 +1,6 @@
-# SpotifyTracker
+# Refrain
 
-**SpotifyTracker** é uma aplicação web interativa construída em React que permite aos usuários visualizar suas faixas, álbuns e artistas mais ouvidos no Spotify e reproduzir suas músicas diretamente pelo navegador.
+**Refrain** é uma aplicação web interativa construída em React que permite aos usuários visualizar suas faixas, álbuns e artistas mais ouvidos no Spotify e reproduzir suas músicas diretamente pelo navegador.
 
 🌐 **Acesse a aplicação online:** [https://spotify-tracker-topaz.vercel.app/](https://spotify-tracker-topaz.vercel.app/)
 
@@ -41,7 +41,7 @@ npm install
    ```text
    http://127.0.0.1:3001
    ```
-3. Copie o seu **Client ID** e configure-o em `src/config/spotifyConfig.js` (ou via variável de ambiente `REACT_APP_SPOTIFY_CLIENT_ID`).
+3. Copie o seu **Client ID** e defina-o na variável de ambiente `REACT_APP_SPOTIFY_CLIENT_ID` (localmente, copie `.env.example` para `.env.local`; no Vercel, em *Settings > Environment Variables*).
 
 ### 3. Inicie o servidor de desenvolvimento
 

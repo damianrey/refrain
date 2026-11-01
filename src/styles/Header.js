@@ -10,7 +10,7 @@ const StyledHeader = styled.h1`
 
 const Header = () => {
   return (
-    <StyledHeader>Spotify Tracker</StyledHeader>
+    <StyledHeader>Refrain</StyledHeader>
   );
 };
 

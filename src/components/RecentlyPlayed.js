@@ -41,7 +41,7 @@ const RecentlyPlayed = ({ token, currentTrackUri, setCurrentTrackUri, isActive }
   const { data, status, retry } = useSpotifyData(
     "https://api.spotify.com/v1/me/player/recently-played?limit=50",
     token,
-    isActive
+    { enabled: isActive, cacheMs: 0 }
   );
   const recentItems = data?.items ?? [];
 

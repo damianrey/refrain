@@ -91,7 +91,7 @@ const TopTracks = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) =>
       const playlist = await createPlaylistFromTracks(
         token,
         `Top ${topTracks.length} · ${period}`,
-        `Minhas ${topTracks.length} faixas mais ouvidas (${period.toLowerCase()}), gerada pelo SpotifyTracker em ${date}.`,
+        `Minhas ${topTracks.length} faixas mais ouvidas (${period.toLowerCase()}), gerada pelo Refrain em ${date}.`,
         topTracks.map((track) => track.uri)
       );
       setExportStatus({ state: "done", url: playlist.external_urls?.spotify });

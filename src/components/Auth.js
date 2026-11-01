@@ -120,6 +120,11 @@ const Auth = ({ setToken }) => {
   }, [setToken]);
 
   const handleAuthButtonClick = async () => {
+    if (!CLIENT_ID) {
+      window.alert("Login indisponível: defina REACT_APP_SPOTIFY_CLIENT_ID.");
+      return;
+    }
+
     const codeVerifier = generateRandomString(64);
     const hashed = await sha256(codeVerifier);
     const codeChallenge = base64encode(hashed);

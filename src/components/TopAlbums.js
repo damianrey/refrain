@@ -15,9 +15,18 @@ import TopHero from "./TopHero";
 import useSpotifyData from "../hooks/useSpotifyData";
 import ListState from "./ListState";
 
+// As páginas se sobrepõem em uma faixa, por causa do limite de 99
+const mergeTrackPages = (pages) => {
+  const tracks = new Map();
+  (pages ?? []).forEach((page) => {
+    page.items.forEach((track) => tracks.set(track.id, track));
+  });
+  return [...tracks.values()];
+};
+
 const getTopAlbums = (tracks) => {
   // Pontua cada álbum pelas posições das suas faixas no seu top:
-  // a #1 vale 50 pontos, a #50 vale 1. Álbuns com várias faixas bem
+  // quanto mais alta a faixa, mais pontos. Álbuns com várias faixas bem
   // colocadas sobem; empates mantêm a ordem da faixa mais bem colocada.
   const albumMap = new Map();
   tracks.forEach((track, index) => {
@@ -31,11 +40,15 @@ const getTopAlbums = (tracks) => {
 };
 
 const TopAlbums = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) => {
+  // A API limita cada página a 50 itens e o top a 99 faixas no total
   const { data, status, retry } = useSpotifyData(
-    `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=50`,
+    [0, 49].map(
+      (offset) =>
+        `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=50&offset=${offset}`
+    ),
     token
   );
-  const topAlbums = getTopAlbums(data?.items ?? []);
+  const topAlbums = getTopAlbums(mergeTrackPages(data));
 
 
   const ranked = topAlbums.slice(0, 30).map((album, index) => ({ ...album, rank: index + 1 }));

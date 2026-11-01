@@ -178,6 +178,14 @@ export const PlayerWrapper = styled.div`
         flex: 1 1 auto;
         min-width: 0;
       }
+
+      /* Aqui há espaço: nomes longos quebram em vez de serem cortados */
+      [data-type="title-artist-wrapper"] div {
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
+      }
     }
   }
 `;

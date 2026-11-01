@@ -331,8 +331,8 @@ function App() {
     <div>
       <Header>
         <HeaderLeft>
-          <img src={MainLogo} alt="SpotifyTracker" width={42} height={42} />
-          <HeaderTitle>SpotifyTracker</HeaderTitle>
+          <img src={MainLogo} alt="Refrain" width={42} height={42} />
+          <HeaderTitle>Refrain</HeaderTitle>
         </HeaderLeft>
         {token && (
           <TabList as="nav" aria-label="Seções">
@@ -372,7 +372,7 @@ function App() {
       <MainContainer>
         {!token ? (
           <WelcomeCard>
-            <img src={MainLogo} alt="SpotifyTracker" width={68} height={68} />
+            <img src={MainLogo} alt="Refrain" width={68} height={68} />
             <h1>Descubra suas estatísticas no Spotify</h1>
             <p>
               Visualize suas músicas, álbuns e artistas mais ouvidos em diferentes
@@ -476,6 +476,7 @@ function App() {
           </PlayerToggle>
 
           <SpotifyPlayer
+            name="Refrain"
             token={token}
             uris={currentTrackUri ? [currentTrackUri] : []}
             play={!!currentTrackUri}
