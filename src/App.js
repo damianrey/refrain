@@ -6,6 +6,7 @@ import TopAlbums from "./components/TopAlbums";
 import RecentlyPlayed from "./components/RecentlyPlayed";
 import { SpotifyAttribution } from "./components/SpotifyBrand";
 import { startTokenAutoRefresh } from "./config/spotifyToken";
+import { useArtworkColor } from "./utils/artworkColor";
 import {
   Header,
   HeaderLeft,
@@ -106,6 +107,8 @@ function App() {
   const [progressMs, setProgressMs] = useState(0);
   const [durationMs, setDurationMs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playerImage, setPlayerImage] = useState("");
+  const playerColor = useArtworkColor(playerImage);
 
   const isDraggingSeekRef = useRef(false);
   const seekReleaseTimerRef = useRef(null);
@@ -189,6 +192,9 @@ function App() {
     setIsPlaying(!!state.isPlaying);
     if (state.track && state.track.durationMs) {
       setDurationMs(state.track.durationMs);
+    }
+    if (state.track?.image) {
+      setPlayerImage(state.track.image);
     }
     if (!isDraggingSeekRef.current && typeof state.progressMs === "number") {
       setProgressMs(state.progressMs);
@@ -443,6 +449,7 @@ function App() {
           role="region"
           aria-label="Player"
           data-expanded={isPlayerExpanded}
+          style={playerColor ? { "--artwork-color": playerColor } : undefined}
           onTouchStart={handlePlayerTouchStart}
           onTouchEnd={handlePlayerTouchEnd}
         >

@@ -9,7 +9,12 @@ export const PlayerWrapper = styled.div`
   z-index: 1000;
   display: flex;
   align-items: center;
-  background: rgba(18, 21, 27, 0.94);
+  background: linear-gradient(
+      90deg,
+      var(--artwork-color, transparent) 0%,
+      transparent 75%
+    ),
+    rgba(18, 21, 27, 0.94);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);

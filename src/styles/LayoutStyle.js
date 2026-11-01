@@ -610,3 +610,98 @@ export const StateMessage = styled.div`
     color: #d1d5db;
   }
 `;
+
+export const HeroCard = styled.article`
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(
+    110deg,
+    var(--artwork-color, rgba(29, 185, 84, 0.16)) 0%,
+    rgba(22, 25, 32, 0.9) 85%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  transition: border-color 0.22s ease;
+
+  &:hover,
+  &.playing {
+    border-color: #1db954;
+  }
+
+  @media (max-width: 680px) {
+    gap: 14px;
+    padding: 14px;
+  }
+`;
+
+export const HeroCover = styled.div`
+  width: 132px;
+  height: 132px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: ${(props) => (props.$round ? "50%" : "8px")};
+  background: #1f242d;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  @media (max-width: 1080px) {
+    border-radius: ${(props) => (props.$round ? "50%" : "4px")};
+  }
+
+  @media (max-width: 680px) {
+    width: 92px;
+    height: 92px;
+  }
+`;
+
+export const HeroDetails = styled.div`
+  flex: 1;
+  min-width: 0;
+
+  .hero-rank {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #fbbf24;
+  }
+
+  &:is(.playing *) .hero-rank {
+    color: #1ed760;
+  }
+
+  h3 {
+    margin: 4px 0 2px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: #ffffff;
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #d1d5db;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 680px) {
+    h3 {
+      font-size: 1.15rem;
+    }
+
+    p {
+      font-size: 0.85rem;
+    }
+  }
+`;
