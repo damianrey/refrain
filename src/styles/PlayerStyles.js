@@ -25,6 +25,15 @@ export const PlayerWrapper = styled.div`
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7),
     0 0 25px rgba(29, 185, 84, 0.12);
 
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+
+  /* Fica montado para o SDK já estar pronto quando a primeira música tocar */
+  &[data-visible="false"] {
+    visibility: hidden;
+    opacity: 0;
+    transform: translate(-50%, 24px);
+  }
+
   /* Ajustes internos do react-spotify-web-playback */
   .PlayerRSWP {
     flex: 1;

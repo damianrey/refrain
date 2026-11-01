@@ -109,6 +109,8 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerImage, setPlayerImage] = useState("");
   const playerColor = useArtworkColor(playerImage);
+  // Só aparece com algo para mostrar, inclusive música vinda de outro dispositivo
+  const isPlayerVisible = !!currentTrackUri || !!playerImage;
 
   const isDraggingSeekRef = useRef(false);
   const seekReleaseTimerRef = useRef(null);
@@ -458,6 +460,7 @@ function App() {
         <PlayerWrapper
           role="region"
           aria-label="Player"
+          data-visible={isPlayerVisible}
           data-expanded={isPlayerExpanded}
           style={playerColor ? { "--artwork-color": playerColor } : undefined}
           onTouchStart={handlePlayerTouchStart}
