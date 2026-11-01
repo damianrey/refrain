@@ -80,6 +80,7 @@ export const PlayerWrapper = styled.div`
       flex-direction: row !important;
       min-height: 0 !important;
       gap: 8px;
+      padding-right: 36px !important;
     }
 
     [data-component-name="Info"] {
@@ -112,7 +113,77 @@ export const PlayerWrapper = styled.div`
     [data-component-name="Actions"] {
       padding: 0 !important;
     }
+
+    .player-mini-progress {
+      display: block;
+    }
+
+    /* Mini player: só capa, título e play. O restante aparece ao expandir */
+    &[data-expanded="false"] {
+      .player-extra,
+      [data-component-name="Actions"],
+      ._ControlsButtonsRSWP > div:not(:has(.rswp__toggle)) {
+        display: none !important;
+      }
+    }
+
+    /* Expandido: título em linha própria, para o nome caber, e controles abaixo */
+    &[data-expanded="true"] {
+      .player-mini-progress {
+        display: none;
+      }
+
+      [data-component-name="Wrapper"] {
+        flex-wrap: wrap !important;
+      }
+
+      [data-component-name="Info"],
+      [data-component-name="Controls"] {
+        flex: 1 1 100% !important;
+      }
+    }
   }
+`;
+
+export const PlayerToggle = styled.button`
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 30;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #d1d5db;
+  cursor: pointer;
+
+  svg {
+    transition: transform 0.2s ease;
+  }
+
+  [data-expanded="true"] > & svg {
+    transform: rotate(180deg);
+  }
+
+  @media (max-width: 820px) {
+    display: flex;
+  }
+`;
+
+export const MiniProgress = styled.div`
+  display: none;
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 2px;
+  background: #1db954;
+  transform-origin: left center;
 `;
 
 export const SeekBarContainer = styled.div`

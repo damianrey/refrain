@@ -25,6 +25,8 @@ import {
 import MainLogo from "./img/logo.svg";
 import {
   PlayerWrapper,
+  PlayerToggle,
+  MiniProgress,
   SeekBarContainer,
   SeekTime,
   SeekSlider,
@@ -63,6 +65,9 @@ const formatTime = (ms) => {
   const seconds = totalSeconds % 60;
   return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 };
+
+const MOBILE_PLAYER_QUERY = "(max-width: 820px)";
+const SWIPE_DISTANCE_PX = 40;
 
 const VolumeIcon = ({ volume, isMuted }) => {
   if (isMuted || volume === 0) {
@@ -118,6 +123,39 @@ function App() {
   const playerRef = useRef(null);
   const sdkThrottleTimer = useRef(null);
   const lastSdkExecution = useRef(0);
+
+  // Mini player: expandido, ocupa uma entrada no histórico para o "voltar" do celular recolhê-lo
+  const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
+  const swipeStartYRef = useRef(null);
+
+  useEffect(() => {
+    const handlePopState = (e) => setIsPlayerExpanded(!!e.state?.playerExpanded);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const expandPlayer = () => {
+    window.history.pushState({ playerExpanded: true }, "");
+    setIsPlayerExpanded(true);
+  };
+
+  const collapsePlayer = () => window.history.back();
+
+  const handlePlayerTouchStart = (e) => {
+    // Arrastar os sliders não conta como gesto de expandir ou recolher
+    const isSlider = e.target.matches('input[type="range"]');
+    const isMobile = window.matchMedia(MOBILE_PLAYER_QUERY).matches;
+    swipeStartYRef.current = isSlider || !isMobile ? null : e.touches[0].clientY;
+  };
+
+  const handlePlayerTouchEnd = (e) => {
+    if (swipeStartYRef.current === null) return;
+    const distance = swipeStartYRef.current - e.changedTouches[0].clientY;
+    swipeStartYRef.current = null;
+
+    if (distance > SWIPE_DISTANCE_PX && !isPlayerExpanded) expandPlayer();
+    if (distance < -SWIPE_DISTANCE_PX && isPlayerExpanded) collapsePlayer();
+  };
 
   // Renova o token enquanto o app está aberto, sem interromper a sessão
   useEffect(() => {
@@ -401,7 +439,25 @@ function App() {
       </MainContainer>
 
       {token && (
-        <PlayerWrapper role="region" aria-label="Player">
+        <PlayerWrapper
+          role="region"
+          aria-label="Player"
+          data-expanded={isPlayerExpanded}
+          onTouchStart={handlePlayerTouchStart}
+          onTouchEnd={handlePlayerTouchEnd}
+        >
+          <PlayerToggle
+            type="button"
+            onClick={isPlayerExpanded ? collapsePlayer : expandPlayer}
+            aria-expanded={isPlayerExpanded}
+            aria-label={isPlayerExpanded ? "Recolher player" : "Expandir player"}
+            title={isPlayerExpanded ? "Recolher player" : "Expandir player"}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="6 15 12 9 18 15" />
+            </svg>
+          </PlayerToggle>
+
           <SpotifyPlayer
             token={token}
             uris={currentTrackUri ? [currentTrackUri] : []}
@@ -417,7 +473,14 @@ function App() {
             styles={playerStyles}
           />
 
+          <MiniProgress
+            className="player-mini-progress"
+            style={{ transform: `scaleX(${seekPercent / 100})` }}
+            aria-hidden="true"
+          />
+
           <SeekBarContainer
+            className="player-extra"
             onWheel={handleSeekWheel}
             title="Arraste para escolher o trecho da música ou use o scroll (±5s)"
           >
@@ -439,6 +502,7 @@ function App() {
           </SeekBarContainer>
 
           <VolumeContainer
+            className="player-extra"
             onWheel={handleVolumeWheel}
             title="Role o scroll do mouse ou arraste para ajustar o volume"
           >
