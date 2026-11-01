@@ -2,7 +2,7 @@
 
 **Refrain** é uma aplicação web interativa construída em React que permite aos usuários visualizar suas faixas, álbuns e artistas mais ouvidos no Spotify e reproduzir suas músicas diretamente pelo navegador.
 
-🌐 **Acesse a aplicação online:** [https://spotify-tracker-topaz.vercel.app/](https://spotify-tracker-topaz.vercel.app/)
+🌐 **Acesse a aplicação online:** [https://refrain-app.vercel.app/](https://refrain-app.vercel.app/)
 
 ## Funcionalidades
 
@@ -29,8 +29,8 @@
 ### 1. Clone o repositório e instale as dependências
 
 ```bash
-git clone https://github.com/damianrey/spotify-tracker.git
-cd spotify-tracker
+git clone https://github.com/damianrey/refrain.git
+cd refrain
 npm install
 ```
 
@@ -54,6 +54,6 @@ A aplicação será iniciada automaticamente em [http://127.0.0.1:3001](http://1
 ## Deploy (Vercel)
 
 A aplicação está hospedada na Vercel em:
-👉 **[https://spotify-tracker-topaz.vercel.app/](https://spotify-tracker-topaz.vercel.app/)**
+👉 **[https://refrain-app.vercel.app/](https://refrain-app.vercel.app/)**
 
-O projeto detecta automaticamente a origem (`window.location.origin`) para o `REDIRECT_URI`. Para funcionar no domínio em produção, certifique-se de que `https://spotify-tracker-topaz.vercel.app` esteja adicionado na lista de **Redirect URIs** do aplicativo no [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
+O projeto detecta automaticamente a origem (`window.location.origin`) para o `REDIRECT_URI`. Para funcionar no domínio em produção, certifique-se de que `https://refrain-app.vercel.app` esteja adicionado na lista de **Redirect URIs** do aplicativo no [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
