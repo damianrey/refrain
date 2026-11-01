@@ -624,6 +624,7 @@ export const HeroCard = styled.article`
     var(--artwork-color, rgba(29, 185, 84, 0.16)) 0%,
     rgba(22, 25, 32, 0.9) 85%
   );
+  background-origin: border-box;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   transition: border-color 0.22s ease;

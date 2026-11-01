@@ -132,6 +132,12 @@ function App() {
   const swipeStartYRef = useRef(null);
 
   useEffect(() => {
+    // Recarregar com o player aberto mantém a marca na entrada do histórico:
+    // sem limpá-la, voltar para essa entrada reabriria o player
+    if (window.history.state?.playerExpanded) {
+      window.history.replaceState(null, "");
+    }
+
     const handlePopState = (e) => setIsPlayerExpanded(!!e.state?.playerExpanded);
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
@@ -142,7 +148,11 @@ function App() {
     setIsPlayerExpanded(true);
   };
 
-  const collapsePlayer = () => window.history.back();
+  // Recolhe na hora: o history.back() é assíncrono e pode demorar a disparar o popstate
+  const collapsePlayer = () => {
+    setIsPlayerExpanded(false);
+    if (window.history.state?.playerExpanded) window.history.back();
+  };
 
   const handlePlayerTouchStart = (e) => {
     // Arrastar os sliders não conta como gesto de expandir ou recolher

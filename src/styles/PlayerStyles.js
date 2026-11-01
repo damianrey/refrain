@@ -15,6 +15,8 @@ export const PlayerWrapper = styled.div`
       transparent 75%
     ),
     rgba(18, 21, 27, 0.94);
+  /* Sem isso o gradiente se repete sob a borda e inverte as cores das laterais */
+  background-origin: border-box;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -97,6 +99,12 @@ export const PlayerWrapper = styled.div`
       padding-left: 0 !important;
       border-bottom: none !important;
 
+      /* A biblioteca reserva 64px para o link da capa, o que afastava o título */
+      > a {
+        min-width: 0 !important;
+        min-height: 0 !important;
+      }
+
       img {
         width: 44px !important;
         height: 44px !important;
@@ -140,11 +148,35 @@ export const PlayerWrapper = styled.div`
 
       [data-component-name="Wrapper"] {
         flex-wrap: wrap !important;
+        padding-right: 0 !important;
       }
 
       [data-component-name="Info"],
       [data-component-name="Controls"] {
         flex: 1 1 100% !important;
+      }
+
+      /* Reserva o espaço da seta só nesta linha, para centralizar os controles */
+      [data-component-name="Info"] {
+        padding-right: 36px !important;
+      }
+
+      /* Título à esquerda e logo à direita, na mesma linha da capa */
+      ._ContentWrapperRSWP {
+        flex-direction: row !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+
+        > a {
+          flex-shrink: 0;
+          margin-top: 0;
+        }
+      }
+
+      ._ContentRSWP {
+        flex: 1 1 auto;
+        min-width: 0;
       }
     }
   }
@@ -153,7 +185,7 @@ export const PlayerWrapper = styled.div`
 export const PlayerToggle = styled.button`
   display: none;
   position: absolute;
-  top: 6px;
+  top: 13px;
   right: 6px;
   z-index: 30;
   width: 32px;
@@ -173,6 +205,12 @@ export const PlayerToggle = styled.button`
 
   [data-expanded="true"] > & svg {
     transform: rotate(180deg);
+  }
+
+  /* Recolhido, centraliza com o botão de play */
+  [data-expanded="false"] > & {
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   @media (max-width: 820px) {
@@ -205,12 +243,20 @@ export const SeekBarContainer = styled.div`
   @media (max-width: 820px) {
     position: static;
     width: 100%;
-    padding: 0 4px;
+
+    /* Tempos nas pontas, alinhados às bordas das demais linhas */
+    span:first-child {
+      text-align: left;
+    }
+
+    span:last-child {
+      text-align: right;
+    }
   }
 `;
 
 export const SeekTime = styled.span`
-  min-width: 34px;
+  min-width: 38px;
   font-size: 0.75rem;
   font-weight: 600;
   color: #9ca3af;
@@ -290,7 +336,18 @@ export const VolumeContainer = styled.div`
     padding-left: 0;
     margin-left: 0;
     width: 100%;
-    gap: 6px;
+    gap: 10px;
+
+    /* Mesmas larguras da barra de progresso, para os dois sliders alinharem */
+    & > button:first-child {
+      justify-content: flex-start;
+      width: 38px;
+      padding: 0;
+    }
+
+    & > span {
+      min-width: 38px;
+    }
 
     /* No toque, o slider basta: oculta os botões −/+ para economizar espaço */
     & > button:not(:first-child) {
