@@ -68,20 +68,49 @@ export const PlayerWrapper = styled.div`
 
   @media (max-width: 820px) {
     flex-direction: column;
-    padding: 10px 14px;
-    bottom: 10px;
-    width: calc(100vw - 20px);
-    gap: 8px;
+    align-items: stretch;
+    padding: 8px 12px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    width: calc(100vw - 16px);
+    gap: 4px;
+    border-radius: 14px;
+
+    /* Layout compacto em linha: capa + título à esquerda, controles à direita */
+    [data-component-name="Wrapper"] {
+      flex-direction: row !important;
+      min-height: 0 !important;
+      gap: 8px;
+    }
 
     [data-component-name="Info"] {
-      width: 170px !important;
-      min-width: 170px !important;
-      max-width: 170px !important;
-      flex: 0 0 170px !important;
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      min-height: 0 !important;
+      flex: 1 1 auto !important;
+      padding-left: 0 !important;
+      border-bottom: none !important;
+
+      img {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 4px;
+      }
+    }
+
+    ._ContentWrapperRSWP {
+      min-height: 44px !important;
+      width: calc(100% - 52px) !important;
     }
 
     [data-component-name="Controls"] {
-      padding: 0 6px !important;
+      width: auto !important;
+      flex: 0 0 auto !important;
+      padding: 0 !important;
+    }
+
+    [data-component-name="Actions"] {
+      padding: 0 !important;
     }
   }
 `;
@@ -182,12 +211,20 @@ export const VolumeContainer = styled.div`
 
   @media (max-width: 820px) {
     border-left: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
     padding-left: 0;
     margin-left: 0;
-    padding-top: 8px;
     width: 100%;
-    justify-content: center;
+    gap: 6px;
+
+    /* No toque, o slider basta: oculta os botões −/+ para economizar espaço */
+    & > button:not(:first-child) {
+      display: none;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      width: auto;
+    }
   }
 `;
 

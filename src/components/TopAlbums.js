@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   GridContainer,
-  GridColumn,
   GridItem,
   RankBadge,
   CoverWrapper,
   ItemDetails,
   ItemMeta,
 } from "../styles/LayoutStyle";
+import { OpenInSpotify } from "./SpotifyBrand";
 
 const TopAlbums = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) => {
   const [topAlbums, setTopAlbums] = useState([]);
@@ -25,18 +25,20 @@ const TopAlbums = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) =>
           }
         )
         .then((response) => {
+          // Pontua cada álbum pelas posições das suas faixas no seu top:
+          // a #1 vale 50 pontos, a #50 vale 1. Álbuns com várias faixas bem
+          // colocadas sobem; empates mantêm a ordem da faixa mais bem colocada.
+          const tracks = response.data.items;
           const albumMap = new Map();
-          response.data.items.forEach((track) => {
+          tracks.forEach((track, index) => {
             const album = track.album;
             if (!albumMap.has(album.id)) {
-              albumMap.set(album.id, {
-                ...album,
-                popularity: track.popularity,
-              });
+              albumMap.set(album.id, { ...album, score: 0 });
             }
+            albumMap.get(album.id).score += tracks.length - index;
           });
           const sortedAlbums = Array.from(albumMap.values()).sort(
-            (a, b) => b.popularity - a.popularity
+            (a, b) => b.score - a.score
           );
           setTopAlbums(sortedAlbums);
         })
@@ -50,52 +52,48 @@ const TopAlbums = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) =>
     }
   }, [token, timeRange]);
 
-  const columns = [[], [], []];
-  topAlbums.slice(0, 30).forEach((album, index) => {
-    columns[index % 3].push({ ...album, rank: index + 1 });
-  });
+  const ranked = topAlbums.slice(0, 30).map((album, index) => ({ ...album, rank: index + 1 }));
 
   return (
     <GridContainer>
-      {columns.map((col, colIndex) => (
-        <GridColumn key={colIndex}>
-          {col.map((album) => {
-            const isPlaying = currentTrackUri === album.uri;
-            const releaseYear = album.release_date
-              ? album.release_date.split("-")[0]
-              : "";
-            return (
-              <GridItem
-                key={album.id}
-                className={isPlaying ? "playing" : ""}
-                onClick={() => setCurrentTrackUri(album.uri)}
+      {ranked.map((album) => {
+        const isPlaying = currentTrackUri === album.uri;
+        const releaseYear = album.release_date
+          ? album.release_date.split("-")[0]
+          : "";
+        return (
+          <GridItem
+            key={album.id}
+            className={isPlaying ? "playing" : ""}
+            onClick={() => setCurrentTrackUri(album.uri)}
+          >
+            <RankBadge $rank={album.rank}>
+              <span className="rank-text">#{album.rank}</span>
+              <span className="play-hint">{isPlaying ? "♫" : "▶"}</span>
+            </RankBadge>
+            <CoverWrapper>
+              <img
+                src={album.images[0]?.url}
+                alt={album.name}
+                loading="lazy"
+              />
+            </CoverWrapper>
+            <ItemDetails>
+              <span className="item-title" title={album.name}>
+                {album.name}
+              </span>
+              <span
+                className="item-subtitle"
+                title={album.artists.map((a) => a.name).join(", ")}
               >
-                <RankBadge $rank={album.rank}>#{album.rank}</RankBadge>
-                <CoverWrapper $playing={isPlaying}>
-                  <img
-                    src={album.images[0]?.url}
-                    alt={album.name}
-                    loading="lazy"
-                  />
-                  <div className="play-overlay">{isPlaying ? "♫" : "▶"}</div>
-                </CoverWrapper>
-                <ItemDetails>
-                  <span className="item-title" title={album.name}>
-                    {album.name}
-                  </span>
-                  <span
-                    className="item-subtitle"
-                    title={album.artists.map((a) => a.name).join(", ")}
-                  >
-                    {album.artists.map((a) => a.name).join(", ")}
-                  </span>
-                </ItemDetails>
-                {releaseYear && <ItemMeta>{releaseYear}</ItemMeta>}
-              </GridItem>
-            );
-          })}
-        </GridColumn>
-      ))}
+                {album.artists.map((a) => a.name).join(", ")}
+              </span>
+            </ItemDetails>
+            {releaseYear && <ItemMeta>{releaseYear}</ItemMeta>}
+            <OpenInSpotify url={album.external_urls?.spotify} name={album.name} />
+          </GridItem>
+        );
+      })}
     </GridContainer>
   );
 };

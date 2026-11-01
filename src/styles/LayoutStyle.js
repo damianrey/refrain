@@ -105,7 +105,9 @@ export const TabList = styled.div`
   @media (max-width: 768px) {
     order: 3;
     width: 100%;
-    justify-content: space-around;
+    justify-content: space-between;
+    gap: 2px;
+    box-sizing: border-box;
   }
 `;
 
@@ -118,11 +120,18 @@ export const Tab = styled.button`
   font-weight: 600;
   color: #9ca3af;
   border-radius: 999px;
+  white-space: nowrap;
   transition: all 0.22s ease;
 
   &:hover {
     color: #ffffff;
     background: rgba(255, 255, 255, 0.05);
+  }
+
+  @media (max-width: 768px) {
+    flex: 1;
+    padding: 8px 4px;
+    font-size: 12.5px;
   }
 
   &.active {
@@ -215,7 +224,7 @@ export const PeriodTab = styled.button`
 export const GridContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 10px 16px;
   width: 100%;
 
   @media (max-width: 1080px) {
@@ -225,13 +234,6 @@ export const GridContainer = styled.div`
   @media (max-width: 680px) {
     grid-template-columns: 1fr;
   }
-`;
-
-export const GridColumn = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
 `;
 
 export const GridItem = styled.div`
@@ -256,9 +258,14 @@ export const GridItem = styled.div`
       0 0 16px rgba(29, 185, 84, 0.1);
   }
 
-  &:hover .play-overlay {
-    opacity: 1;
-    transform: scale(1);
+  @media (hover: hover) {
+    &:hover .rank-text {
+      display: none;
+    }
+
+    &:hover .play-hint {
+      display: inline;
+    }
   }
 
   &.playing {
@@ -269,6 +276,14 @@ export const GridItem = styled.div`
     );
     border-color: #1db954;
     box-shadow: 0 0 20px rgba(29, 185, 84, 0.18);
+
+    .rank-text {
+      display: none;
+    }
+
+    .play-hint {
+      display: inline;
+    }
   }
 `;
 
@@ -286,6 +301,12 @@ export const RankBadge = styled.span`
       : "#6b7280"};
   text-align: center;
   font-variant-numeric: tabular-nums;
+
+  .play-hint {
+    display: none;
+    color: #1ed760;
+    font-size: 1rem;
+  }
 `;
 
 export const CoverWrapper = styled.div`
@@ -293,7 +314,8 @@ export const CoverWrapper = styled.div`
   width: 52px;
   height: 52px;
   flex-shrink: 0;
-  border-radius: ${(props) => (props.$round ? "50%" : "10px")};
+  /* O Spotify pede cantos de 8px em telas grandes e 4px nas demais */
+  border-radius: ${(props) => (props.$round ? "50%" : "8px")};
   overflow: hidden;
   background: #1f242d;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
@@ -305,18 +327,8 @@ export const CoverWrapper = styled.div`
     display: block;
   }
 
-  .play-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: ${(props) => (props.$playing ? 1 : 0)};
-    transform: scale(${(props) => (props.$playing ? 1 : 0.9)});
-    transition: all 0.18s ease;
-    color: #1ed760;
-    font-size: 18px;
+  @media (max-width: 1080px) {
+    border-radius: ${(props) => (props.$round ? "50%" : "4px")};
   }
 `;
 
@@ -381,5 +393,156 @@ export const WelcomeCard = styled.div`
     font-size: 0.95rem;
     line-height: 1.6;
     color: #9ca3af;
+  }
+`;
+
+export const ActionBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 16px;
+`;
+
+export const ActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(29, 185, 84, 0.16);
+  border: 1px solid rgba(29, 185, 84, 0.45);
+  color: #1ed760;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #1db954;
+    color: #061109;
+    box-shadow: 0 2px 12px rgba(29, 185, 84, 0.35);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+`;
+
+export const StatusMessage = styled.span`
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: ${(props) => (props.$error ? "#f87171" : "#9ca3af")};
+
+  a {
+    color: #1ed760;
+    font-weight: 700;
+  }
+`;
+
+export const ChartCard = styled.section`
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  background: rgba(22, 25, 32, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  box-sizing: border-box;
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f9fafb;
+  }
+
+  > p {
+    margin: 0 0 14px;
+    font-size: 0.8rem;
+    color: #9ca3af;
+  }
+`;
+
+export const BarRow = styled.div`
+  display: grid;
+  grid-template-columns: minmax(90px, 180px) 1fr 84px;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  border-radius: 6px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .bar-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e5e7eb;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bar-value {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 680px) {
+    grid-template-columns: minmax(80px, 120px) 1fr 72px;
+    gap: 8px;
+  }
+`;
+
+export const BarTrack = styled.div`
+  height: 10px;
+  border-radius: 0 4px 4px 0;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+`;
+
+export const BarFill = styled.div`
+  height: 100%;
+  width: ${(props) => props.$percent}%;
+  background: #1db954;
+  border-radius: 0 4px 4px 0;
+  transition: width 0.4s ease;
+`;
+
+export const OpenInSpotifyLink = styled.a`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+export const AttributionBar = styled.footer`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 28px;
+  font-size: 0.8rem;
+  color: #9ca3af;
+
+  a {
+    display: flex;
   }
 `;

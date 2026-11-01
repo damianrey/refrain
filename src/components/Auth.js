@@ -29,6 +29,13 @@ const base64encode = (input) => {
     .replace(/\//g, "_");
 };
 
+// Tokens emitidos antes da inclusão de novos escopos precisam de um novo login.
+// Roda na importação, antes da primeira renderização, para o botão já nascer como "Login".
+const storedScopes = (window.localStorage.getItem("token_scope") || "").split(" ");
+if (!SCOPES.split(" ").every((s) => storedScopes.includes(s))) {
+  window.localStorage.removeItem("token");
+}
+
 const Auth = ({ setToken }) => {
   const isExchangingCode = useRef(false);
 
@@ -76,6 +83,7 @@ const Auth = ({ setToken }) => {
         .then((data) => {
           if (data.access_token) {
             window.localStorage.setItem("token", data.access_token);
+            window.localStorage.setItem("token_scope", data.scope || SCOPES);
             window.localStorage.removeItem("code_verifier");
             setToken(data.access_token);
           } else {
@@ -110,6 +118,7 @@ const Auth = ({ setToken }) => {
   const logout = () => {
     setToken("");
     window.localStorage.removeItem("token");
+    window.localStorage.removeItem("token_scope");
     window.localStorage.removeItem("code_verifier");
     window.location.reload();
   };
