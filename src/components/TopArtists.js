@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
 import {
   GridContainer,
   GridItem,
@@ -7,12 +6,15 @@ import {
   CoverWrapper,
   ItemDetails,
   ItemMeta,
+  RowButton,
   ChartCard,
   BarRow,
   BarTrack,
   BarFill,
 } from "../styles/LayoutStyle";
 import { OpenInSpotify } from "./SpotifyBrand";
+import useSpotifyData from "../hooks/useSpotifyData";
+import ListState from "./ListState";
 
 const MAX_GENRES = 8;
 
@@ -72,80 +74,71 @@ const TopArtists = ({
   setCurrentTrackUri,
   timeRange,
 }) => {
-  const [topArtists, setTopArtists] = useState([]);
+  const { data, status, retry } = useSpotifyData(
+    `https://api.spotify.com/v1/me/top/artists?time_range=${timeRange}&limit=30`,
+    token
+  );
+  // A API já devolve os artistas na ordem do seu ranking pessoal
+  const topArtists = data?.items ?? [];
 
-  useEffect(() => {
-    if (token) {
-      axios
-        .get(
-          `https://api.spotify.com/v1/me/top/artists?time_range=${timeRange}&limit=30`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-        .then((response) => {
-          // A API já devolve os artistas na ordem do seu ranking pessoal
-          setTopArtists(response.data.items);
-        })
-        .catch((error) => {
-          console.error("Error fetching top artists:", error);
-          if (error.response && error.response.status === 401) {
-            window.localStorage.removeItem("token");
-            window.location.reload();
-          }
-        });
-    }
-  }, [token, timeRange]);
 
   const ranked = topArtists.slice(0, 30).map((artist, index) => ({ ...artist, rank: index + 1 }));
 
   return (
     <>
       <GenreChart artists={topArtists} />
-      <GridContainer>
-        {ranked.map((artist) => {
-          const isPlaying = currentTrackUri === artist.uri;
-          const mainGenre = artist.genres?.[0] || "Artista";
-          return (
-            <GridItem
-              key={artist.id}
-              className={isPlaying ? "playing" : ""}
-              onClick={() => setCurrentTrackUri(artist.uri)}
-            >
-              <RankBadge $rank={artist.rank}>
-                <span className="rank-text">#{artist.rank}</span>
-                <span className="play-hint">{isPlaying ? "♫" : "▶"}</span>
-              </RankBadge>
-              <CoverWrapper $round>
-                <img
-                  src={artist.images[0]?.url}
-                  alt={artist.name}
-                  loading="lazy"
+      <ListState
+        status={status}
+        isEmpty={topArtists.length === 0}
+        emptyMessage="Ainda não há artistas suficientes neste período. Ouça mais músicas e volte depois."
+        onRetry={retry}
+      >
+        <GridContainer>
+          {ranked.map((artist) => {
+            const isPlaying = currentTrackUri === artist.uri;
+            const mainGenre = artist.genres?.[0] || "Artista";
+            return (
+              <GridItem key={artist.id} className={isPlaying ? "playing" : ""}>
+                <RowButton
+                  type="button"
+                  title={artist.name}
+                  aria-label={`Tocar ${artist.name}`}
+                  aria-pressed={isPlaying}
+                  onClick={() => setCurrentTrackUri(artist.uri)}
                 />
-              </CoverWrapper>
-              <ItemDetails>
-                <span className="item-title" title={artist.name}>
-                  {artist.name}
-                </span>
-                <span
-                  className="item-subtitle"
-                  style={{ textTransform: "capitalize" }}
-                >
-                  {mainGenre}
-                </span>
-              </ItemDetails>
-              {artist.popularity !== undefined && (
-                <ItemMeta title="Popularidade no Spotify">
-                  ★ {artist.popularity}
-                </ItemMeta>
-              )}
-              <OpenInSpotify url={artist.external_urls?.spotify} name={artist.name} />
-            </GridItem>
-          );
-        })}
-      </GridContainer>
+                <RankBadge $rank={artist.rank}>
+                  <span className="rank-text">#{artist.rank}</span>
+                  <span className="play-hint">{isPlaying ? "♫" : "▶"}</span>
+                </RankBadge>
+                <CoverWrapper $round>
+                  <img
+                    src={artist.images[0]?.url}
+                    alt={artist.name}
+                    loading="lazy"
+                  />
+                </CoverWrapper>
+                <ItemDetails>
+                  <span className="item-title" title={artist.name}>
+                    {artist.name}
+                  </span>
+                  <span
+                    className="item-subtitle"
+                    style={{ textTransform: "capitalize" }}
+                  >
+                    {mainGenre}
+                  </span>
+                </ItemDetails>
+                {artist.popularity !== undefined && (
+                  <ItemMeta title="Popularidade no Spotify">
+                    ★ {artist.popularity}
+                  </ItemMeta>
+                )}
+                <OpenInSpotify url={artist.external_urls?.spotify} name={artist.name} />
+              </GridItem>
+            );
+          })}
+        </GridContainer>
+      </ListState>
     </>
   );
 };

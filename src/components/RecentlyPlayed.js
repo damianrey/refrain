@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
 import {
   GridContainer,
   GridItem,
@@ -7,8 +6,11 @@ import {
   ItemDetails,
   ItemMeta,
   RankBadge,
+  RowButton,
 } from "../styles/LayoutStyle";
 import { OpenInSpotify } from "./SpotifyBrand";
+import useSpotifyData from "../hooks/useSpotifyData";
+import ListState from "./ListState";
 
 // "agora", "há 12 min", "há 3 h", "ontem, 21:40" ou "12/10, 18:05"
 const formatPlayedAt = (isoDate) => {
@@ -35,72 +37,66 @@ const formatPlayedAt = (isoDate) => {
 };
 
 const RecentlyPlayed = ({ token, currentTrackUri, setCurrentTrackUri, isActive }) => {
-  const [recentItems, setRecentItems] = useState([]);
-
   // Recarrega sempre que a aba é aberta, já que o histórico muda enquanto você ouve
-  useEffect(() => {
-    if (token && isActive) {
-      axios
-        .get("https://api.spotify.com/v1/me/player/recently-played?limit=50", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setRecentItems(response.data.items);
-        })
-        .catch((error) => {
-          console.error("Error fetching recently played:", error);
-          if (error.response && error.response.status === 401) {
-            window.localStorage.removeItem("token");
-            window.location.reload();
-          }
-        });
-    }
-  }, [token, isActive]);
+  const { data, status, retry } = useSpotifyData(
+    "https://api.spotify.com/v1/me/player/recently-played?limit=50",
+    token,
+    isActive
+  );
+  const recentItems = data?.items ?? [];
 
   return (
-    <GridContainer>
-      {/* Sem colunas fixas: a ordem cronológica se mantém em qualquer largura */}
-      {recentItems.map(({ track, played_at: playedAt }) => {
-        const isPlaying = currentTrackUri === track.uri;
-        return (
-          <GridItem
-            key={playedAt}
-            className={isPlaying ? "playing" : ""}
-            onClick={() => setCurrentTrackUri(track.uri)}
-          >
-            {isPlaying && (
-              <RankBadge>
-                <span className="play-hint">♫</span>
-              </RankBadge>
-            )}
-            <CoverWrapper>
-              <img
-                src={track.album.images[0]?.url}
-                alt={track.name}
-                loading="lazy"
+    <ListState
+      status={status}
+      isEmpty={recentItems.length === 0}
+      emptyMessage="Nenhuma faixa tocada recentemente. Ouça algo no Spotify e volte aqui."
+      onRetry={retry}
+    >
+      <GridContainer>
+        {/* Sem colunas fixas: a ordem cronológica se mantém em qualquer largura */}
+        {recentItems.map(({ track, played_at: playedAt }) => {
+          const isPlaying = currentTrackUri === track.uri;
+          return (
+            <GridItem key={playedAt} className={isPlaying ? "playing" : ""}>
+              <RowButton
+                type="button"
+                title={`${track.name} — ${new Date(playedAt).toLocaleString("pt-BR")}`}
+                aria-label={`Tocar ${track.name}`}
+                aria-pressed={isPlaying}
+                onClick={() => setCurrentTrackUri(track.uri)}
               />
-            </CoverWrapper>
-            <ItemDetails>
-              <span className="item-title" title={track.name}>
-                {track.name}
-              </span>
-              <span
-                className="item-subtitle"
-                title={track.artists.map((a) => a.name).join(", ")}
-              >
-                {track.artists.map((a) => a.name).join(", ")}
-              </span>
-            </ItemDetails>
-            <ItemMeta title={new Date(playedAt).toLocaleString("pt-BR")}>
-              {formatPlayedAt(playedAt)}
-            </ItemMeta>
-            <OpenInSpotify url={track.external_urls?.spotify} name={track.name} />
-          </GridItem>
-        );
-      })}
-    </GridContainer>
+              {isPlaying && (
+                <RankBadge>
+                  <span className="play-hint">♫</span>
+                </RankBadge>
+              )}
+              <CoverWrapper>
+                <img
+                  src={track.album.images[0]?.url}
+                  alt={track.name}
+                  loading="lazy"
+                />
+              </CoverWrapper>
+              <ItemDetails>
+                <span className="item-title" title={track.name}>
+                  {track.name}
+                </span>
+                <span
+                  className="item-subtitle"
+                  title={track.artists.map((a) => a.name).join(", ")}
+                >
+                  {track.artists.map((a) => a.name).join(", ")}
+                </span>
+              </ItemDetails>
+              <ItemMeta title={new Date(playedAt).toLocaleString("pt-BR")}>
+                {formatPlayedAt(playedAt)}
+              </ItemMeta>
+              <OpenInSpotify url={track.external_urls?.spotify} name={track.name} />
+            </GridItem>
+          );
+        })}
+      </GridContainer>
+    </ListState>
   );
 };
 

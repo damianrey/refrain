@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
 import {
   GridContainer,
   GridItem,
@@ -7,94 +6,88 @@ import {
   CoverWrapper,
   ItemDetails,
   ItemMeta,
+  RowButton,
 } from "../styles/LayoutStyle";
 import { OpenInSpotify } from "./SpotifyBrand";
+import useSpotifyData from "../hooks/useSpotifyData";
+import ListState from "./ListState";
+
+const getTopAlbums = (tracks) => {
+  // Pontua cada álbum pelas posições das suas faixas no seu top:
+  // a #1 vale 50 pontos, a #50 vale 1. Álbuns com várias faixas bem
+  // colocadas sobem; empates mantêm a ordem da faixa mais bem colocada.
+  const albumMap = new Map();
+  tracks.forEach((track, index) => {
+    const album = track.album;
+    if (!albumMap.has(album.id)) {
+      albumMap.set(album.id, { ...album, score: 0 });
+    }
+    albumMap.get(album.id).score += tracks.length - index;
+  });
+  return Array.from(albumMap.values()).sort((a, b) => b.score - a.score);
+};
 
 const TopAlbums = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) => {
-  const [topAlbums, setTopAlbums] = useState([]);
+  const { data, status, retry } = useSpotifyData(
+    `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=50`,
+    token
+  );
+  const topAlbums = getTopAlbums(data?.items ?? []);
 
-  useEffect(() => {
-    if (token) {
-      axios
-        .get(
-          `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=50`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-        .then((response) => {
-          // Pontua cada álbum pelas posições das suas faixas no seu top:
-          // a #1 vale 50 pontos, a #50 vale 1. Álbuns com várias faixas bem
-          // colocadas sobem; empates mantêm a ordem da faixa mais bem colocada.
-          const tracks = response.data.items;
-          const albumMap = new Map();
-          tracks.forEach((track, index) => {
-            const album = track.album;
-            if (!albumMap.has(album.id)) {
-              albumMap.set(album.id, { ...album, score: 0 });
-            }
-            albumMap.get(album.id).score += tracks.length - index;
-          });
-          const sortedAlbums = Array.from(albumMap.values()).sort(
-            (a, b) => b.score - a.score
-          );
-          setTopAlbums(sortedAlbums);
-        })
-        .catch((error) => {
-          console.error("Error fetching top albums:", error);
-          if (error.response && error.response.status === 401) {
-            window.localStorage.removeItem("token");
-            window.location.reload();
-          }
-        });
-    }
-  }, [token, timeRange]);
 
   const ranked = topAlbums.slice(0, 30).map((album, index) => ({ ...album, rank: index + 1 }));
 
   return (
-    <GridContainer>
-      {ranked.map((album) => {
-        const isPlaying = currentTrackUri === album.uri;
-        const releaseYear = album.release_date
-          ? album.release_date.split("-")[0]
-          : "";
-        return (
-          <GridItem
-            key={album.id}
-            className={isPlaying ? "playing" : ""}
-            onClick={() => setCurrentTrackUri(album.uri)}
-          >
-            <RankBadge $rank={album.rank}>
-              <span className="rank-text">#{album.rank}</span>
-              <span className="play-hint">{isPlaying ? "♫" : "▶"}</span>
-            </RankBadge>
-            <CoverWrapper>
-              <img
-                src={album.images[0]?.url}
-                alt={album.name}
-                loading="lazy"
+    <ListState
+      status={status}
+      isEmpty={ranked.length === 0}
+      emptyMessage="Ainda não há álbuns suficientes neste período. Ouça mais músicas e volte depois."
+      onRetry={retry}
+    >
+      <GridContainer>
+        {ranked.map((album) => {
+          const isPlaying = currentTrackUri === album.uri;
+          const releaseYear = album.release_date
+            ? album.release_date.split("-")[0]
+            : "";
+          return (
+            <GridItem key={album.id} className={isPlaying ? "playing" : ""}>
+              <RowButton
+                type="button"
+                title={`${album.name} — ${album.artists.map((a) => a.name).join(", ")}`}
+                aria-label={`Tocar ${album.name}`}
+                aria-pressed={isPlaying}
+                onClick={() => setCurrentTrackUri(album.uri)}
               />
-            </CoverWrapper>
-            <ItemDetails>
-              <span className="item-title" title={album.name}>
-                {album.name}
-              </span>
-              <span
-                className="item-subtitle"
-                title={album.artists.map((a) => a.name).join(", ")}
-              >
-                {album.artists.map((a) => a.name).join(", ")}
-              </span>
-            </ItemDetails>
-            {releaseYear && <ItemMeta>{releaseYear}</ItemMeta>}
-            <OpenInSpotify url={album.external_urls?.spotify} name={album.name} />
-          </GridItem>
-        );
-      })}
-    </GridContainer>
+              <RankBadge $rank={album.rank}>
+                <span className="rank-text">#{album.rank}</span>
+                <span className="play-hint">{isPlaying ? "♫" : "▶"}</span>
+              </RankBadge>
+              <CoverWrapper>
+                <img
+                  src={album.images[0]?.url}
+                  alt={album.name}
+                  loading="lazy"
+                />
+              </CoverWrapper>
+              <ItemDetails>
+                <span className="item-title" title={album.name}>
+                  {album.name}
+                </span>
+                <span
+                  className="item-subtitle"
+                  title={album.artists.map((a) => a.name).join(", ")}
+                >
+                  {album.artists.map((a) => a.name).join(", ")}
+                </span>
+              </ItemDetails>
+              {releaseYear && <ItemMeta>{releaseYear}</ItemMeta>}
+              <OpenInSpotify url={album.external_urls?.spotify} name={album.name} />
+            </GridItem>
+          );
+        })}
+      </GridContainer>
+    </ListState>
   );
 };
 

@@ -7,11 +7,14 @@ import {
   CoverWrapper,
   ItemDetails,
   ItemMeta,
+  RowButton,
   ActionBar,
   ActionButton,
   StatusMessage,
 } from "../styles/LayoutStyle";
 import { OpenInSpotify } from "./SpotifyBrand";
+import useSpotifyData from "../hooks/useSpotifyData";
+import ListState from "./ListState";
 
 const PERIOD_LABELS = {
   short_term: "Últimas 4 Semanas",
@@ -69,7 +72,12 @@ const createPlaylistFromTracks = async (token, name, description, uris) => {
 };
 
 const TopTracks = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) => {
-  const [topTracks, setTopTracks] = useState([]);
+  const { data, status, retry } = useSpotifyData(
+    `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=30`,
+    token
+  );
+  // A API já devolve as faixas na ordem do seu ranking pessoal
+  const topTracks = data?.items ?? [];
   const [exportStatus, setExportStatus] = useState({ state: "idle" });
 
   useEffect(() => {
@@ -103,30 +111,6 @@ const TopTracks = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) =>
     }
   };
 
-  useEffect(() => {
-    if (token) {
-      axios
-        .get(
-          `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=30`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-        .then((response) => {
-          // A API já devolve as faixas na ordem do seu ranking pessoal
-          setTopTracks(response.data.items);
-        })
-        .catch((error) => {
-          console.error("Error fetching top tracks:", error);
-          if (error.response && error.response.status === 401) {
-            window.localStorage.removeItem("token");
-            window.location.reload();
-          }
-        });
-    }
-  }, [token, timeRange]);
 
   const ranked = topTracks.slice(0, 30).map((track, index) => ({ ...track, rank: index + 1 }));
 
@@ -134,7 +118,7 @@ const TopTracks = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) =>
     <>
       <ActionBar>
         {exportStatus.state === "done" && (
-          <StatusMessage>
+          <StatusMessage role="status">
             Playlist criada!{" "}
             {exportStatus.url && (
               <a href={exportStatus.url} target="_blank" rel="noreferrer">
@@ -144,7 +128,7 @@ const TopTracks = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) =>
           </StatusMessage>
         )}
         {exportStatus.state === "error" && (
-          <StatusMessage $error>{exportStatus.message}</StatusMessage>
+          <StatusMessage $error role="alert">{exportStatus.message}</StatusMessage>
         )}
         <ActionButton
           type="button"
@@ -154,45 +138,55 @@ const TopTracks = ({ token, currentTrackUri, setCurrentTrackUri, timeRange }) =>
           {exportStatus.state === "loading" ? "Criando playlist…" : "+ Salvar como playlist"}
         </ActionButton>
       </ActionBar>
-      <GridContainer>
-        {ranked.map((track) => {
-          const isPlaying = currentTrackUri === track.uri;
-          return (
-            <GridItem
-              key={track.id}
-              className={isPlaying ? "playing" : ""}
-              onClick={() => setCurrentTrackUri(track.uri)}
-            >
-              <RankBadge $rank={track.rank}>
-                <span className="rank-text">#{track.rank}</span>
-                <span className="play-hint">{isPlaying ? "♫" : "▶"}</span>
-              </RankBadge>
-              <CoverWrapper>
-                <img
-                  src={track.album.images[0]?.url}
-                  alt={track.name}
-                  loading="lazy"
+      <ListState
+        status={status}
+        isEmpty={topTracks.length === 0}
+        emptyMessage="Ainda não há faixas suficientes neste período. Ouça mais músicas e volte depois."
+        onRetry={retry}
+      >
+        <GridContainer>
+          {ranked.map((track) => {
+            const isPlaying = currentTrackUri === track.uri;
+            return (
+              <GridItem key={track.id} className={isPlaying ? "playing" : ""}>
+                <RowButton
+                  type="button"
+                  title={`${track.name} — ${track.artists.map((a) => a.name).join(", ")}`}
+                  aria-label={`Tocar ${track.name}`}
+                  aria-pressed={isPlaying}
+                  onClick={() => setCurrentTrackUri(track.uri)}
                 />
-              </CoverWrapper>
-              <ItemDetails>
-                <span className="item-title" title={track.name}>
-                  {track.name}
-                </span>
-                <span
-                  className="item-subtitle"
-                  title={track.artists.map((a) => a.name).join(", ")}
-                >
-                  {track.artists.map((a) => a.name).join(", ")}
-                </span>
-              </ItemDetails>
-              {track.duration_ms && (
-                <ItemMeta>{formatDuration(track.duration_ms)}</ItemMeta>
-              )}
-              <OpenInSpotify url={track.external_urls?.spotify} name={track.name} />
-            </GridItem>
-          );
-        })}
-      </GridContainer>
+                <RankBadge $rank={track.rank}>
+                  <span className="rank-text">#{track.rank}</span>
+                  <span className="play-hint">{isPlaying ? "♫" : "▶"}</span>
+                </RankBadge>
+                <CoverWrapper>
+                  <img
+                    src={track.album.images[0]?.url}
+                    alt={track.name}
+                    loading="lazy"
+                  />
+                </CoverWrapper>
+                <ItemDetails>
+                  <span className="item-title" title={track.name}>
+                    {track.name}
+                  </span>
+                  <span
+                    className="item-subtitle"
+                    title={track.artists.map((a) => a.name).join(", ")}
+                  >
+                    {track.artists.map((a) => a.name).join(", ")}
+                  </span>
+                </ItemDetails>
+                {track.duration_ms && (
+                  <ItemMeta>{formatDuration(track.duration_ms)}</ItemMeta>
+                )}
+                <OpenInSpotify url={track.external_urls?.spotify} name={track.name} />
+              </GridItem>
+            );
+          })}
+        </GridContainer>
+      </ListState>
     </>
   );
 };

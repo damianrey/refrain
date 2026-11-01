@@ -287,6 +287,22 @@ export const GridItem = styled.div`
   }
 `;
 
+// Cobre a linha inteira para o clique, o teclado e os leitores de tela
+export const RowButton = styled.button`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline-offset: -2px;
+  }
+`;
+
 export const RankBadge = styled.span`
   min-width: 26px;
   font-size: 0.82rem;
@@ -298,7 +314,7 @@ export const RankBadge = styled.span`
       ? "#cbd5e1"
       : props.$rank === 3
       ? "#d97706"
-      : "#6b7280"};
+      : "#9ca3af"};
   text-align: center;
   font-variant-numeric: tabular-nums;
 
@@ -356,12 +372,21 @@ export const ItemDetails = styled.div`
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  /* Sem mouse não há tooltip: o nome completo precisa aparecer na própria linha */
+  @media (hover: none) {
+    .item-title,
+    .item-subtitle {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
 `;
 
 export const ItemMeta = styled.span`
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #9ca3af;
   padding: 4px 8px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
@@ -518,6 +543,8 @@ export const BarFill = styled.div`
 `;
 
 export const OpenInSpotifyLink = styled.a`
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -544,5 +571,42 @@ export const AttributionBar = styled.footer`
 
   a {
     display: flex;
+  }
+`;
+
+const skeletonPulse = keyframes`
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+`;
+
+export const SkeletonItem = styled.div`
+  height: 74px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  animation: ${skeletonPulse} 1.6s ease-in-out infinite;
+`;
+
+export const StateMessage = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 40px 20px;
+  text-align: center;
+  background: rgba(22, 25, 32, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #d1d5db;
   }
 `;

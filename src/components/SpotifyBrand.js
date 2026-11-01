@@ -42,7 +42,6 @@ export const OpenInSpotify = ({ url, name }) => {
       rel="noreferrer"
       title="Abrir no Spotify"
       aria-label={`Abrir ${name} no Spotify`}
-      onClick={(e) => e.stopPropagation()}
     >
       <SpotifyIcon />
     </OpenInSpotifyLink>

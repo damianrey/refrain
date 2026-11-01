@@ -7,6 +7,13 @@ import {
   RESPONSE_TYPE,
   SCOPES,
 } from "../config/spotifyConfig";
+import {
+  canRefreshToken,
+  clearTokenData,
+  isTokenExpiring,
+  refreshAccessToken,
+  saveTokenData,
+} from "../config/spotifyToken";
 import AuthButton from "../styles/AuthButton";
 
 const generateRandomString = (length) => {
@@ -33,7 +40,7 @@ const base64encode = (input) => {
 // Roda na importação, antes da primeira renderização, para o botão já nascer como "Login".
 const storedScopes = (window.localStorage.getItem("token_scope") || "").split(" ");
 if (!SCOPES.split(" ").every((s) => storedScopes.includes(s))) {
-  window.localStorage.removeItem("token");
+  clearTokenData();
 }
 
 const Auth = ({ setToken }) => {
@@ -48,16 +55,33 @@ const Auth = ({ setToken }) => {
       return;
     }
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+
     const storedToken = window.localStorage.getItem("token");
-    if (storedToken && storedToken !== "undefined" && storedToken !== "null") {
+    const hasStoredToken =
+      storedToken && storedToken !== "undefined" && storedToken !== "null";
+
+    // Sessão vencida ou token removido após um 401: renova sem pedir novo login
+    if (!code && canRefreshToken() && (!hasStoredToken || isTokenExpiring())) {
+      refreshAccessToken().then((newToken) => {
+        if (newToken) {
+          setToken(newToken);
+        } else if (!canRefreshToken()) {
+          window.location.reload();
+        } else if (hasStoredToken) {
+          setToken(storedToken);
+        }
+      });
+      return;
+    }
+
+    if (hasStoredToken) {
       setToken(storedToken);
       return;
     } else if (storedToken === "undefined" || storedToken === "null") {
       window.localStorage.removeItem("token");
     }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get("code");
 
     if (code && !isExchangingCode.current) {
       isExchangingCode.current = true;
@@ -82,8 +106,7 @@ const Auth = ({ setToken }) => {
         .then((res) => res.json())
         .then((data) => {
           if (data.access_token) {
-            window.localStorage.setItem("token", data.access_token);
-            window.localStorage.setItem("token_scope", data.scope || SCOPES);
+            saveTokenData(data);
             window.localStorage.removeItem("code_verifier");
             setToken(data.access_token);
           } else {
@@ -117,8 +140,7 @@ const Auth = ({ setToken }) => {
 
   const logout = () => {
     setToken("");
-    window.localStorage.removeItem("token");
-    window.localStorage.removeItem("token_scope");
+    clearTokenData();
     window.localStorage.removeItem("code_verifier");
     window.location.reload();
   };

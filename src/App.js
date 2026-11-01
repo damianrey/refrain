@@ -5,6 +5,7 @@ import TopArtists from "./components/TopArtists";
 import TopAlbums from "./components/TopAlbums";
 import RecentlyPlayed from "./components/RecentlyPlayed";
 import { SpotifyAttribution } from "./components/SpotifyBrand";
+import { startTokenAutoRefresh } from "./config/spotifyToken";
 import {
   Header,
   HeaderLeft,
@@ -117,6 +118,12 @@ function App() {
   const playerRef = useRef(null);
   const sdkThrottleTimer = useRef(null);
   const lastSdkExecution = useRef(0);
+
+  // Renova o token enquanto o app está aberto, sem interromper a sessão
+  useEffect(() => {
+    if (!token) return undefined;
+    return startTokenAutoRefresh(setToken);
+  }, [token]);
 
   // Atualiza a barra de progresso suavemente enquanto a música está tocando
   useEffect(() => {
@@ -274,27 +281,31 @@ function App() {
           <HeaderTitle>SpotifyTracker</HeaderTitle>
         </HeaderLeft>
         {token && (
-          <TabList>
+          <TabList as="nav" aria-label="Seções">
             <Tab
               className={activeTab === 0 ? "active" : ""}
+              aria-current={activeTab === 0 ? "page" : undefined}
               onClick={() => setActiveTab(0)}
             >
               Top Tracks
             </Tab>
             <Tab
               className={activeTab === 1 ? "active" : ""}
+              aria-current={activeTab === 1 ? "page" : undefined}
               onClick={() => setActiveTab(1)}
             >
               Top Albums
             </Tab>
             <Tab
               className={activeTab === 2 ? "active" : ""}
+              aria-current={activeTab === 2 ? "page" : undefined}
               onClick={() => setActiveTab(2)}
             >
               Top Artists
             </Tab>
             <Tab
               className={activeTab === 3 ? "active" : ""}
+              aria-current={activeTab === 3 ? "page" : undefined}
               onClick={() => setActiveTab(3)}
             >
               Recentes
@@ -328,18 +339,21 @@ function App() {
                   <PeriodTabList>
                     <PeriodTab
                       className={timeRange === "short_term" ? "active" : ""}
+                      aria-pressed={timeRange === "short_term"}
                       onClick={() => setTimeRange("short_term")}
                     >
                       Últimas 4 Semanas
                     </PeriodTab>
                     <PeriodTab
                       className={timeRange === "medium_term" ? "active" : ""}
+                      aria-pressed={timeRange === "medium_term"}
                       onClick={() => setTimeRange("medium_term")}
                     >
                       Últimos 6 Meses
                     </PeriodTab>
                     <PeriodTab
                       className={timeRange === "long_term" ? "active" : ""}
+                      aria-pressed={timeRange === "long_term"}
                       onClick={() => setTimeRange("long_term")}
                     >
                       Todo o Período
@@ -387,7 +401,7 @@ function App() {
       </MainContainer>
 
       {token && (
-        <PlayerWrapper>
+        <PlayerWrapper role="region" aria-label="Player">
           <SpotifyPlayer
             token={token}
             uris={currentTrackUri ? [currentTrackUri] : []}
@@ -433,6 +447,7 @@ function App() {
               onClick={toggleMute}
               $muted={effectiveVolume === 0}
               title={effectiveVolume === 0 ? "Ativar som" : "Silenciar"}
+              aria-label={effectiveVolume === 0 ? "Ativar som" : "Silenciar"}
             >
               <VolumeIcon volume={effectiveVolume} isMuted={isMuted} />
             </VolumeIconButton>
@@ -440,6 +455,7 @@ function App() {
               type="button"
               onClick={() => applyVolume(effectiveVolume - 5)}
               title="Diminuir volume (-5%)"
+              aria-label="Diminuir volume"
             >
               −
             </VolumeStepButton>
@@ -457,6 +473,7 @@ function App() {
               type="button"
               onClick={() => applyVolume(effectiveVolume + 5)}
               title="Aumentar volume (+5%)"
+              aria-label="Aumentar volume"
             >
               +
             </VolumeStepButton>
